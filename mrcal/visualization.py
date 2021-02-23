@@ -380,27 +380,25 @@ plot
         if points is None or len(points) == 0:
             return []
 
-        if point_labels is not None:
-
-            # all the non-fixed point indices
-            ipoint_not = np.ones( (len(points),), dtype=bool)
-            ipoint_not[np.array(list(point_labels.keys()))] = False
-
-            return \
-                [ (points[ipoint_not],
-                   dict(tuplesize = -3,
-                        _with = 'points',
-                        legend = 'points')) ] + \
-                [ (points[ipoint],
-                   dict(tuplesize = -3,
-                        _with = 'points',
-                        legend = point_labels[ipoint])) \
-                  for ipoint in point_labels.keys() ]
-
-        else:
+        if point_labels is None:
             return [ (points, dict(tuplesize = -3,
                                    _with = 'points',
                                    legend = 'points')) ]
+
+        # all the non-fixed point indices
+        ipoint_not = np.ones( (len(points),), dtype=bool)
+        ipoint_not[np.array(list(point_labels.keys()))] = False
+
+        return \
+            [ (points[ipoint_not],
+               dict(tuplesize = -3,
+                    _with = 'points',
+                    legend = 'points')) ] + \
+            [ (points[ipoint],
+               dict(tuplesize = -3,
+                    _with = 'points',
+                    legend = point_labels[ipoint])) \
+              for ipoint in point_labels.keys() ]
 
     curves_cameras    = gen_curves_cameras()
     curves_calobjects = gen_curves_calobjects()
@@ -688,9 +686,11 @@ A tuple:
         if len(models) > 2:
             raise Exception("I can only plot a vectorfield when looking at exactly 2 models. Instead I have {}". \
                             format(len(models)))
-        if not (distance is None or \
-                isinstance(distance,float) or \
-                len(distance) == 1):
+        if (
+            distance is not None
+            and not isinstance(distance, float)
+            and len(distance) != 1
+        ):
             raise Exception("I don't know how to plot multiple-distance diff with vectorfields")
     if directions and len(models) > 2:
         raise Exception("I can only color-code by directions when looking at exactly 2 models. Instead I have {}". \
@@ -703,19 +703,7 @@ A tuple:
                                                          use_uncertainties,
                                                          focus_center,focus_radius,
                                                          implied_Rt10)
-    if not vectorfield:
-        curve_options = \
-            _options_heatmap_with_contours(
-                # update these plot options
-                kwargs,
-
-                cbmax, None,
-                models[0].imagersize(),
-                gridn_width, gridn_height,
-                contours = not directions)
-        plot_options = kwargs
-
-    else:
+    if vectorfield:
         q0      = nps.clump(q0,      n=len(q0     .shape)-1)
         diff    = nps.clump(diff,    n=len(diff   .shape)-1)
         difflen = nps.clump(difflen, n=len(difflen.shape)  )
@@ -732,6 +720,18 @@ A tuple:
         curve_options = dict(_with='vectors size screen 0.01,20 fixed filled palette',
                              tuplesize=5)
 
+    else:
+        curve_options = \
+            _options_heatmap_with_contours(
+                # update these plot options
+                kwargs,
+
+                cbmax, None,
+                models[0].imagersize(),
+                gridn_width, gridn_height,
+                contours = not directions)
+        plot_options = kwargs
+
     if not directions:
         plot_options['cbrange'] = [0,cbmax]
         color                   = difflen
@@ -743,15 +743,15 @@ A tuple:
                            'set',
                            'palette defined ( 0 "#00ffff", 0.5 "#80ffff", 1 "#ffffff") model HSV')
 
-    if not vectorfield:
-        plot_data_args = [ (color, curve_options) ]
-    else:
+    if vectorfield:
         plot_data_args = \
             [ (q0  [:,0], q0  [:,1],
                diff[:,0] * vectorscale, diff[:,1] * vectorscale,
                color,
                curve_options) ]
 
+    else:
+        plot_data_args = [ (color, curve_options) ]
     if valid_intrinsics_region:
         valid_region0 = models[0].valid_intrinsics_region()
         if valid_region0 is not None:
@@ -995,11 +995,7 @@ plot
         else:
             distance_description = f". Looking out to {distance}m"
 
-        if not isotropic:
-            what_description = "Projection"
-        else:
-            what_description = "Isotropic projection"
-
+        what_description = "Projection" if not isotropic else "Isotropic projection"
         title = f"{what_description} uncertainty (in pixels) based on calibration input noise{distance_description}"
         if extratitle is not None:
             title += ": " + extratitle
@@ -1359,11 +1355,7 @@ plot
                                       model = model,
                                       what  = 'rms-stdev' if isotropic else 'worstdirection-stdev')
     if 'title' not in kwargs:
-        if not isotropic:
-            what_description = "Projection"
-        else:
-            what_description = "Isotropic projection"
-
+        what_description = "Projection" if not isotropic else "Isotropic projection"
         title = f"{what_description} uncertainty (in pixels) based on calibration input noise at q = {where}"
         if extratitle is not None:
             title += ": " + extratitle

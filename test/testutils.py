@@ -131,11 +131,7 @@ def confirm_equal(x, xref, msg='', eps=1e-6,
 
     if N != 0:
         try:  # I I can subtract, get the error that way
-            if relative:
-                diff = relative_diff(x, xref)
-            else:
-                diff = x - xref
-
+            diff = relative_diff(x, xref) if relative else x - xref
             if worstcase:
                 what = 'worst-case'
                 err  = np.max(np.abs(diff))

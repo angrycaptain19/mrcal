@@ -45,9 +45,7 @@ def parse_args():
                         type=str,
                         help='''Camera model to grid''')
 
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 args = parse_args()
 

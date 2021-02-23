@@ -194,6 +194,5 @@ for i in range(len(paths)):
     path   = paths[i]
     for j in range(observations.shape[-2]):
         l = observations[i][j][2]
-        if l < 0: l = '-'
-        else:     l = int(l)
+        l = '-' if l < 0 else int(l)
         print(f"{path} {observations[i][j][0]} {observations[i][j][1]} {l}")

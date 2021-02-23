@@ -523,7 +523,7 @@ camera coordinate system FROM the calibration object coordinate system.
     lensmodels      = [di[0] for di in lensmodels_intrinsics_data]
     intrinsics_data = [di[1] for di in lensmodels_intrinsics_data]
 
-    if not all([mrcal.lensmodel_metadata(m)['has_core'] for m in lensmodels]):
+    if not all(mrcal.lensmodel_metadata(m)['has_core'] for m in lensmodels):
         raise Exception("this currently works only with models that have an fxfycxcy core. It might not be required. Take a look at the following code if you want to add support")
 
     fx = [ i[0] for i in intrinsics_data ]
@@ -594,8 +594,8 @@ camera coordinate system FROM the calibration object coordinate system.
                                             useExtrinsicGuess = True)
             if not result:
                 raise Exception("retried solvePnP failed!")
-            if tvec[2] <= 0:
-                raise Exception("retried solvePnP says that tvec.z <= 0")
+        if tvec[2] <= 0:
+            raise Exception("retried solvePnP says that tvec.z <= 0")
 
 
         Rt_cf = mrcal.Rt_from_rt(nps.glue(rvec.ravel(), tvec.ravel(), axis=-1))

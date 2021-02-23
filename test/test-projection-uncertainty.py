@@ -203,10 +203,7 @@ if args.make_documentation_plots:
     if terminal['pdf'] is None: terminal['pdf'] = 'pdf size 8in,6in       noenhanced solid color      font ",12"'
     if terminal['png'] is None: terminal['png'] = 'pngcairo size 1024,768 transparent noenhanced crop font ",12"'
 
-extraset = dict()
-for k in pointscale.keys():
-    extraset[k] = f'pointsize {pointscale[k]}'
-
+extraset = {k: f'pointsize {pointscale[k]}' for k in pointscale.keys()}
 # I want the RNG to be deterministic
 np.random.seed(0)
 
@@ -339,28 +336,34 @@ if not fixedframes:
 # this is a no-op: I'm already at the optimum. With regularization, this will
 # move us a certain amount (that the test will evaluate). Then I look at
 # noise-induced motions off this optimization optimum
-optimization_inputs_baseline = \
-    dict( intrinsics                                = copy.deepcopy(intrinsics_true),
-          extrinsics_rt_fromref                     = copy.deepcopy(extrinsics_true_mounted if fixedframes else extrinsics_true_mounted[1:,:]),
-          frames_rt_toref                           = copy.deepcopy(frames_true),
-          points                                    = None,
-          observations_board                        = observations_true,
-          indices_frame_camintrinsics_camextrinsics = indices_frame_camintrinsics_camextrinsics,
-          observations_point                        = None,
-          indices_point_camintrinsics_camextrinsics = None,
-          lensmodel                                 = lensmodel,
-          calobject_warp                            = copy.deepcopy(calobject_warp_true),
-          imagersizes                               = imagersizes,
-          calibration_object_spacing                = object_spacing,
-          verbose                                   = False,
-          observed_pixel_uncertainty                = pixel_uncertainty_stdev,
-          do_optimize_frames                        = not fixedframes,
-          do_optimize_intrinsics_core               = False if args.model=='splined' else True,
-          do_optimize_intrinsics_distortions        = True,
-          do_optimize_extrinsics                    = True,
-          do_optimize_calobject_warp                = True,
-          do_apply_regularization                   = True,
-          do_apply_outlier_rejection                = False)
+optimization_inputs_baseline = dict(
+    intrinsics=copy.deepcopy(intrinsics_true),
+    extrinsics_rt_fromref=copy.deepcopy(
+        extrinsics_true_mounted
+        if fixedframes
+        else extrinsics_true_mounted[1:, :]
+    ),
+    frames_rt_toref=copy.deepcopy(frames_true),
+    points=None,
+    observations_board=observations_true,
+    indices_frame_camintrinsics_camextrinsics=indices_frame_camintrinsics_camextrinsics,
+    observations_point=None,
+    indices_point_camintrinsics_camextrinsics=None,
+    lensmodel=lensmodel,
+    calobject_warp=copy.deepcopy(calobject_warp_true),
+    imagersizes=imagersizes,
+    calibration_object_spacing=object_spacing,
+    verbose=False,
+    observed_pixel_uncertainty=pixel_uncertainty_stdev,
+    do_optimize_frames=not fixedframes,
+    do_optimize_intrinsics_core=args.model != 'splined',
+    do_optimize_intrinsics_distortions=True,
+    do_optimize_extrinsics=True,
+    do_optimize_calobject_warp=True,
+    do_apply_regularization=True,
+    do_apply_outlier_rejection=False,
+)
+
 mrcal.optimize(**optimization_inputs_baseline)
 
 models_baseline = \
@@ -539,14 +542,13 @@ rotation here is aphysical (it is a mean of multiple rotation matrices)
 
         if args.reproject_perturbed != 'mean-frames-using-meanq-penalize-big-shifts':
             return np.mean(q_reprojected, axis=-3)
-        else:
-            # Experiment. Weighted mean to de-emphasize points with huge shifts
+        # Experiment. Weighted mean to de-emphasize points with huge shifts
 
-            w = 1./nps.mag(q_reprojected - q)
-            w = nps.mv(nps.cat(w,w),0,-1)
-            return \
-                np.sum(q_reprojected*w, axis=-3) / \
-                np.sum(w, axis=-3)
+        w = 1./nps.mag(q_reprojected - q)
+        w = nps.mv(nps.cat(w,w),0,-1)
+        return \
+            np.sum(q_reprojected*w, axis=-3) / \
+            np.sum(w, axis=-3)
 
 
 def reproject_perturbed__fit_boards_ref(q, distance,
@@ -722,7 +724,7 @@ else:
 
 
 
-q0_true = dict()
+q0_true = {}
 for distance in args.distances:
 
     # shape (Ncameras, 2)

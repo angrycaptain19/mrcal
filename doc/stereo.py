@@ -52,7 +52,7 @@ else:
                     svg = 'svg size 800,600       noenhanced solid dynamic    font ",14"',
                     png = 'pngcairo size 1024,768 transparent noenhanced crop font ",12"',
                     gp  = 'gp')
-    for extension in terminal.keys():
+    for extension in terminal:
         mrcal.show_geometry( models + [ rt_stereo_ref ],
                              ( "camera0", "camera1", "stereo" ),
                              show_calobjects = False,

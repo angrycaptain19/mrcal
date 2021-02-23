@@ -130,8 +130,7 @@ if args.writeimage:
         base,extension = os.path.splitext(filename_in)
         if len(extension) != 4:
             raise Exception(f"imagefile must end in .xxx where 'xxx' is some image extension. Instead got '{filename_in}'")
-        filename_out = f"{base}-{suffix}{extension}"
-        return filename_out
+        return f"{base}-{suffix}{extension}"
 
 
     imagefile_out = target_image_filename(args.image, 'valid-intrinsics-region')

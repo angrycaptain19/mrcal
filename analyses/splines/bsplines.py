@@ -122,7 +122,7 @@ def splev_wikipedia(k: int, x: int, t, c, p: int):
     # make sure I never reference c out of bounds
     if k-p < 0: raise Exception("c referenced out of min bounds")
     if k >= len(c): raise Exception("c referenced out of max bounds")
-    d = [c[j + k - p] for j in range(0, p+1)]
+    d = [c[j + k - p] for j in range(p+1)]
 
     for r in range(1, p+1):
         for j in range(p, r-1, -1):
@@ -215,12 +215,7 @@ def sample_wikipedia_integer_knots(x, c, k):
     offset = int((k+1)//2)
     return splev_wikipedia(l,x,t,c[offset:],k)
 
-if 1:
-    y = sample_wikipedia_integer_knots(x,c,k)
-else:
-    offset = int((k+1)//2)
-    y = sample_wikipedia(x,t, c[offset:], k)
-
+y = sample_wikipedia_integer_knots(x,c,k)
 if not skip_plots:
     plot2 = gp.gnuplotlib(title = 'sample_wikipedia')
     plot2.plot( (x, y, dict(_with='lines')),

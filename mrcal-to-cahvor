@@ -57,7 +57,7 @@ args = parse_args()
 # arg-parsing is done before the imports so that --help works without building
 # stuff, so that I can generate the manpages and README
 
-Nstdin = sum(1 for m in args.model if m=='-')
+Nstdin = args.model.count('-')
 if Nstdin > 1:
     print(f"At most one model can be read from standard input ('-'), but I got {Nstdin}", file=sys.stderr)
     sys.exit(1)

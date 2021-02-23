@@ -99,13 +99,12 @@ def _read(s, name):
         if i in x:
             # Any data that's composed only of digits and whitespaces (no "."),
             # use integers
-            if re.match('[0-9\s]+$', x[i]): totype = int
-            else:                           totype = float
+            totype = int if re.match('[0-9\s]+$', x[i]) else float
             x[i] = np.array( [ totype(v) for v in re.split('\s+', x[i])], dtype=totype)
 
     # Now I sanity-check the results and call it done
     for k in ('Dimensions','C','A','H','V'):
-        if not k in x:
+        if k not in x:
             raise Exception("Cahvor file '{}' incomplete. Missing values for: {}".
                             format(name, k))
 
@@ -388,10 +387,13 @@ def read_transforms(f):
         raise Exception("'transforms.txt': I only know about 'ins2veh' and 'cam2ins' lines. Got '{}'".
                         format(l))
 
-    if not all(e is not None for e in x.values()):
-        raise Exception("Transforms file '{}' incomplete. Missing values for: {}",
-                        f.name,
-                        [k for k in x.keys() if not x[k]])
+    if any(e is None for e in x.values()):
+        raise Exception(
+            "Transforms file '{}' incomplete. Missing values for: {}",
+            f.name,
+            [k for k in x if not x[k]],
+        )
+
     if needclose:
         f.close()
 
