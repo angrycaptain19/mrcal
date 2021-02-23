@@ -313,10 +313,7 @@ We return a tuple
         def rotation_any_v_to_z(v):
             r'''Return any rotation matrix that maps the given unit vector v to [0,0,1]'''
             z = v
-            if np.abs(v[0]) < .9:
-                x = np.array((1,0,0))
-            else:
-                x = np.array((0,1,0))
+            x = np.array((1,0,0)) if np.abs(v[0]) < .9 else np.array((0,1,0))
             x -= nps.inner(x,v)*v
             x /= nps.mag(x)
             y = np.cross(z,x)

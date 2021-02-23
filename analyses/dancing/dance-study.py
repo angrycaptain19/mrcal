@@ -306,18 +306,24 @@ controllable_args          = \
           object_spacing = dict(_type = float),
           object_width_n = dict(_type = int) )
 
-for a in controllable_args.keys():
+for a in controllable_args:
     l,n = split_list(getattr(args, a), controllable_args[a]['_type'])
     controllable_args[a]['value']   = l
     controllable_args[a]['listlen'] = n
 
-if any( controllable_args[a]['listlen'] > 2 for a in controllable_args.keys() ):
+if any(controllable_args[a]['listlen'] > 2 for a in controllable_args):
     raise Exception(f"All controllable args must have either at most 2 values. {a} has {controllable_args[a]['listlen']}")
 
-controllable_arg_0values = [ a for a in controllable_args.keys() if controllable_args[a]['listlen'] == 0 ]
-controllable_arg_2values = [ a for a in controllable_args.keys() if controllable_args[a]['listlen'] == 2 ]
+controllable_arg_0values = [
+    a for a in controllable_args if controllable_args[a]['listlen'] == 0
+]
 
-if    len(controllable_arg_2values) == 0: controllable_arg_2values = ''
+controllable_arg_2values = [
+    a for a in controllable_args if controllable_args[a]['listlen'] == 2
+]
+
+
+if not controllable_arg_2values: controllable_arg_2values = ''
 elif  len(controllable_arg_2values) == 1: controllable_arg_2values = controllable_arg_2values[0]
 else: raise Exception(f"At most 1 controllable arg may have 2 values. Instead I saw: {controllable_arg_2values}")
 
@@ -525,11 +531,6 @@ def solve(Ncameras,
         stats = mrcal.optimize(**optimization_inputs)
         print(f"## optimized. rms = {stats['rms_reproj_error__pixels']}", file=sys.stderr)
 
-        # Ready for a final reoptimization with the geometry
-        optimization_inputs['do_optimize_extrinsics']      = True
-        if not fixed_frames:
-            optimization_inputs['do_optimize_frames'] = True
-
     else:
         optimization_inputs['lensmodel']                   = lensmodel
         if not mrcal.lensmodel_metadata(lensmodel)['has_core'] or \
@@ -544,9 +545,10 @@ def solve(Ncameras,
             optimization_inputs['intrinsics']              = nps.glue(intrinsics[:,:4],
                                                                       np.zeros((Ncameras,Nintrinsics-4),),axis=-1)
         optimization_inputs['do_optimize_intrinsics_core'] = True
-        optimization_inputs['do_optimize_extrinsics']      = True
-        if not fixed_frames:
-            optimization_inputs['do_optimize_frames'] = True
+    # Ready for a final reoptimization with the geometry
+    optimization_inputs['do_optimize_extrinsics']      = True
+    if not fixed_frames:
+        optimization_inputs['do_optimize_frames'] = True
 
     stats = mrcal.optimize(**optimization_inputs)
     print(f"## optimized. rms = {stats['rms_reproj_error__pixels']}", file=sys.stderr)

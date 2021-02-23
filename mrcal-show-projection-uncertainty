@@ -143,14 +143,15 @@ import numpy as np
 import mrcal
 
 
-if args.observations_xydist:
-    if args.vs_distance_at is not None or \
-       args.distance       is not None or \
-       args.isotropic                  or \
-       args.observations:
-        print("--observations-xydist is exclusive with --vs-distance-at and --distance and --isotropic and --observations",
-              file=sys.stderr)
-        sys.exit(1)
+if args.observations_xydist and (
+    args.vs_distance_at is not None
+    or args.distance is not None
+    or args.isotropic
+    or args.observations
+):
+    print("--observations-xydist is exclusive with --vs-distance-at and --distance and --isotropic and --observations",
+          file=sys.stderr)
+    sys.exit(1)
 
 if args.vs_distance_at is not None:
     if args.observations_xydist  or \

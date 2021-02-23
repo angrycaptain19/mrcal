@@ -340,7 +340,7 @@ We return a tuple:
     '''
 
     def is_list_or_tuple(l):
-        return isinstance(l,list) or isinstance(l,tuple)
+        return isinstance(l, (list, tuple))
 
 
     # shape: (Nheight,Nwidth,2). Contains (x,y) rows
@@ -650,7 +650,7 @@ element (difference consists of N separate polygons)
         # line between the centroid and some vertex. Which one doesn't matter; I
         # keep trying until some cut works
         hole = p.interiors[0]
-        for i in range(0,len(hole.coords)):
+        for i in range(len(hole.coords)):
 
             l0 = np.array((hole.centroid))
             l1 = np.array((hole.coords[i]))
@@ -827,17 +827,9 @@ from the filename.
         # Alrighty. The centers are all numeric. I gather all the digits around the
         # centers, and I'm done
         m = re.match("^(.*?)([0-9]*)$", leading)
-        if m:
-            pre_numeric = m.group(2)
-        else:
-            pre_numeric = ''
-
+        pre_numeric = m.group(2) if m else ''
         m = re.match("^([0-9]*)(.*?)$", trailing)
-        if m:
-            post_numeric = m.group(1)
-        else:
-            post_numeric = ''
-
+        post_numeric = m.group(1) if m else ''
         return [int(pre_numeric + f[Nleading:Itrailing] + post_numeric) for f in files]
 
 

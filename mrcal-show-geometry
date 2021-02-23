@@ -99,8 +99,7 @@ if args.transforms is not None:
     def Rt_plot_ref(icam):
         try:
             pair = get_pair(icam)
-            Rt_ins_ref = transforms['ins_from_camera'][pair]
-            return Rt_ins_ref
+            return transforms['ins_from_camera'][pair]
         except:
             return None
     cameras_Rt_plot_ref = [ Rt_plot_ref(icam) for icam in range(len(models))]

@@ -124,10 +124,12 @@ def _validateValidIntrinsicsRegion(valid_intrinsics_region):
         # valid intrinsics region is a closed contour, so I need at least 4
         # points to be valid. Or as a special case, a (0,2) array is legal, and
         # means "intrinsics are valid nowhere"
-        if not (valid_intrinsics_region.ndim == 2     and \
-                valid_intrinsics_region.shape[1] == 2 and \
-                (valid_intrinsics_region.shape[0] >= 4 or \
-                 valid_intrinsics_region.shape[0] == 0)):
+        if (
+            valid_intrinsics_region.ndim != 2
+            or valid_intrinsics_region.shape[1] != 2
+            or valid_intrinsics_region.shape[0] < 4
+            and valid_intrinsics_region.shape[0] != 0
+        ):
             raise Exception("The valid extrinsics region must be a numpy array of shape (N,2) with N >= 4 or N == 0")
     except:
         raise Exception("The valid extrinsics region must be a numpy array of shape (N,2) with N >= 4. Instead got type {} of shape {}". \
@@ -228,7 +230,7 @@ future
 
     data_bytes = io.BytesIO()
 
-    optimization_inputs_normalized = dict()
+    optimization_inputs_normalized = {}
     for k in optimization_inputs.keys():
         v = optimization_inputs[k]
         if v is None: v = ''
@@ -269,7 +271,7 @@ that function for details
 
     # for legacy compatibility
     def renamed(s0, s1, d):
-        if s0 in d and not s1 in d:
+        if s0 in d and s1 not in d:
             d[s1] = d[s0]
             del d[s0]
     renamed('do_optimize_intrinsic_core',
@@ -492,7 +494,7 @@ A sample valid .cameramodel file:
 
         # for legacy compatibility
         def renamed(s0, s1, d):
-            if s0 in d and not s1 in d:
+            if s0 in d and s1 not in d:
                 d[s1] = d[s0]
                 del d[s0]
         renamed('distortion_model',

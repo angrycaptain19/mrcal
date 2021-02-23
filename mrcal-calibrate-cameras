@@ -527,7 +527,7 @@ if args.seed:
     def seedmodels_iterator():
         for g in args.seed.split(','):
             globbed_filenames = sorted(glob.glob(g))
-            if 0 == len(globbed_filenames):
+            if len(globbed_filenames) == 0:
                 raise Exception("seed glob '{}' matched no files!".format(g))
             for f in globbed_filenames:
                 yield mrcal.cameramodel(f)

@@ -262,12 +262,10 @@ def _is_bound_method(fn):
 
 
 def allmethods(cl):
-    methods = {}
-    for key, value in inspect.getmembers(cl, inspect.isroutine):
-        methods[key] = 1
+    methods = {key: 1 for key, value in inspect.getmembers(cl, inspect.isroutine)}
     for base in cl.__bases__:
         methods.update(allmethods(base)) # all your base are belong to us
-    for key in methods.keys():
+    for key in methods:
         methods[key] = getattr(cl, key)
     return methods
 
@@ -425,18 +423,21 @@ def safeimport(path, forceload=0, cache={}):
         # disk, we always have to reload the module.  Checking the file's
         # mtime isn't good enough (e.g. the module could contain a class
         # that inherits from another module that has changed).
-        if forceload and path in sys.modules:
-            if path not in sys.builtin_module_names:
-                # Remove the module from sys.modules and re-import to try
-                # and avoid problems with partially loaded modules.
-                # Also remove any submodules because they won't appear
-                # in the newly loaded module's namespace if they're already
-                # in sys.modules.
-                subs = [m for m in sys.modules if m.startswith(path + '.')]
-                for key in [path] + subs:
-                    # Prevent garbage collection.
-                    cache[key] = sys.modules[key]
-                    del sys.modules[key]
+        if (
+            forceload
+            and path in sys.modules
+            and path not in sys.builtin_module_names
+        ):
+            # Remove the module from sys.modules and re-import to try
+            # and avoid problems with partially loaded modules.
+            # Also remove any submodules because they won't appear
+            # in the newly loaded module's namespace if they're already
+            # in sys.modules.
+            subs = [m for m in sys.modules if m.startswith(path + '.')]
+            for key in [path] + subs:
+                # Prevent garbage collection.
+                cache[key] = sys.modules[key]
+                del sys.modules[key]
         module = __import__(path)
     except:
         # Did the error occur before or after the module was found?
@@ -636,11 +637,11 @@ class HTMLDoc(Doc):
         result = ''
         rows = (len(list)+cols-1)//cols
         for col in range(cols):
-            result = result + '<td width="%d%%" valign=top>' % (100//cols)
+            result += '<td width="%d%%" valign=top>' % (100//cols)
             for i in range(rows*col, rows*col+rows):
                 if i < len(list):
                     result = result + format(list[i]) + '<br>\n'
-            result = result + '</td>'
+            result += '</td>'
         return '<table width="100%%" summary="list"><tr>%s</tr></table>' % result
 
     def grey(self, text): return '<font color="#909090">%s</font>' % text
@@ -677,14 +678,8 @@ class HTMLDoc(Doc):
         name, path, ispackage, shadowed = modpkginfo
         if shadowed:
             return self.grey(name)
-        if path:
-            url = '%s.%s.html' % (path, name)
-        else:
-            url = '%s.html' % name
-        if ispackage:
-            text = '<strong>%s</strong>&nbsp;(package)' % name
-        else:
-            text = name
+        url = '%s.%s.html' % (path, name) if path else '%s.html' % name
+        text = '<strong>%s</strong>&nbsp;(package)' % name if ispackage else name
         return '<a href="%s">%s</a>' % (url, text)
 
     def filelink(self, url, path):
@@ -740,16 +735,14 @@ class HTMLDoc(Doc):
         for entry in tree:
             if type(entry) is type(()):
                 c, bases = entry
-                result = result + '<dt><font face="helvetica, arial">'
-                result = result + self.classlink(c, modname)
+                result += '<dt><font face="helvetica, arial">'
+                result += self.classlink(c, modname)
                 if bases and bases != (parent,):
-                    parents = []
-                    for base in bases:
-                        parents.append(self.classlink(base, modname))
+                    parents = [self.classlink(base, modname) for base in bases]
                     result = result + '(' + ', '.join(parents) + ')'
-                result = result + '\n</font></dt>'
+                result += '\n</font></dt>'
             elif type(entry) is type([]):
-                result = result + '<dd>\n%s</dd>\n' % self.formattree(
+                result += '<dd>\n%s</dd>\n' % self.formattree(
                     entry, modname, c)
         return '<dl>\n%s</dl>\n' % result
 
@@ -1093,11 +1086,10 @@ class HTMLDoc(Doc):
 
         if skipdocs:
             return '<dl><dt>%s</dt></dl>\n' % decl
-        else:
-            doc = self.markup(
-                getdoc(object), self.preformat, funcs, classes, methods)
-            doc = doc and '<dd><tt>%s</tt></dd>' % doc
-            return '<dl><dt>%s</dt>%s</dl>\n' % (decl, doc)
+        doc = self.markup(
+            getdoc(object), self.preformat, funcs, classes, methods)
+        doc = doc and '<dd><tt>%s</tt></dd>' % doc
+        return '<dl><dt>%s</dt>%s</dl>\n' % (decl, doc)
 
     def docdata(self, object, name=None, mod=None, cl=None):
         """Produce html documentation for a data descriptor."""
@@ -1204,10 +1196,10 @@ class TextDoc(Doc):
                 result = result + prefix + classname(c, modname)
                 if bases and bases != (parent,):
                     parents = (classname(c, modname) for c in bases)
-                    result = result + '(%s)' % ', '.join(parents)
-                result = result + '\n'
+                    result += '(%s)' % ', '.join(parents)
+                result += '\n'
             elif type(entry) is type([]):
-                result = result + self.formattree(
+                result += self.formattree(
                     entry, modname, c, prefix + '    ')
         return result
 

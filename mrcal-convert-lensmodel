@@ -299,11 +299,7 @@ else:
     q = np.ascontiguousarray( nps.transpose(nps.clump( nps.cat(*np.meshgrid(qx,qy)), n=-2)) )
     if args.radius != 0:
         # we use a subset of the input data for the fit
-        if args.where is None:
-            focus_center = (dims - 1.) / 2.
-        else:
-            focus_center = args.where
-
+        focus_center = (dims - 1.) / 2. if args.where is None else args.where
         if args.radius > 0:
             r = args.radius
         else:
